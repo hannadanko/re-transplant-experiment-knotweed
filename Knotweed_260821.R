@@ -17,7 +17,6 @@ library(ggpubr)
 library(emmeans)
 library(multcomp)
 library(multcompView)
-conflicts_prefer(lme4::lmer)
 
 # 3.data prep####
 
@@ -40,7 +39,7 @@ BM <- data.frame(
   DW_above_g = BM.all$AboveDw_g,
   prop.below = BM.all$BelowDW_g/BM.all$TotalBiomass_g)
 
-str(BM)
+  str(BM)
   
 
 BM$site.block <- paste(BM$Site_2023, BM$Block_2023, sep=".")
@@ -106,16 +105,13 @@ ggplot(data = BM[BM$remove==0,], aes(DW_below_g, DW_above_g, color=site.block ))
 
 #some block effects, but not extreme
 
-
-BM[BM$DW_total_g<20,]
-
-
 # 4.lmer models ####--------------------------------------------
 ## 4.1 lmer model prep: standardization of rhizome weight and latitude####
 BM$popID <- as.factor(BM$popID)
 median(BM$DW_above_g, na.rm=T) #16
 median(BM$DW_below_g, na.rm=T) #40
 median(BM$DW_total_g, na.rm=T) #56
+
 BM$RW.std <- scale(log(BM$Rhiz_wgt_g))
 
 hist(BM$Lat_origin)
@@ -128,7 +124,7 @@ hist(BM$Lat_origin.std)
 mod.above <- lmer(log(DW_above_g+20 )~  
                     RW.std + Lat_origin.std + Site_2022 + Site_2023+  RW.std:Site_2023 +Lat_origin.std:Site_2023 +Site_2022:Site_2023 + (1|site.block), data=BM ) 
 
-(R.above <- anova(mod.above))
+(R.above <- anova(mod.above)[,1:6])
 
 par(mfrow=c(1,2))
 plot(mod.above)
@@ -140,10 +136,7 @@ pairs(emmeans(mod.above , "Site_2022"))
 
 cld(emmeans(mod.above , "Site_2023"))
 cld(emmeans(mod.above , "Site_2022"))
-exp(3.62)-20
-exp(3.75)-20
-(22.52108-12.78595)/12.78595
-(22.52108-17.33757)/17.33757
+
 write.table(R.above, "Results_260116.txt", dec=".", sep=",")
 
 
@@ -151,7 +144,7 @@ write.table(R.above, "Results_260116.txt", dec=".", sep=",")
 #Torino
 mod.above.To <- lmer(log(DW_above_g+20)~  
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Torino",] ) 
-anova.above.To <- anova(mod.above.To)
+anova.above.To <- anova(mod.above.To)[,1:6]
 name <- "above.BM.To" 
 write.table(name, "S_table.csv")
 write.table(anova.above.To, "S_table.csv", append=T)
@@ -159,7 +152,7 @@ write.table(anova.above.To, "S_table.csv", append=T)
 #Tü
 mod.above.Tu <- lmer(log(DW_above_g+20)~  
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Tübingen",] ) 
-anova.above.Tu <- anova(mod.above.Tu)
+anova.above.Tu <- anova(mod.above.Tu)[,1:6]
 
 name <- "above.BM.Tu" 
 write.table(name, "S_table.csv", append=T)
@@ -168,7 +161,7 @@ write.table(anova.above.Tu, "S_table.csv", append=T)
 #Up
 mod.above.Up <- lmer(log(DW_above_g+20)~  
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Uppsala",] ) 
-anova.above.Up <- anova(mod.above.Up)
+anova.above.Up <- anova(mod.above.Up)[,1:6]
 
 name <- "above.BM.Up" 
 write.table(name, "S_table.csv", append=T)
@@ -181,26 +174,20 @@ write.table(anova.above.Up, "S_table.csv", append=T)
 mod.below <- lmer(log(DW_below_g+10)~  
                     RW.std + Lat_origin.std + Site_2022 + Site_2023+  RW.std:Site_2023 + Lat_origin.std:Site_2023 +Site_2022:Site_2023 + (1|site.block), data=BM ) 
 
-(R.below <- anova(mod.below))
+(R.below <- anova(mod.below)[,1:6])
 cld(emmeans(mod.below , "Site_2023"))
 
-exp(3.7)-10
-exp(3.85)-10
-exp(4.3)-10
-(63.69979-30.4473)/63.69979
-(36.99306-30.4473)/36.99306
 plot(mod.below)
 qqnorm(resid(mod.below))
 qqline(resid(mod.below))
 write.table(R.below, "Results_260116.txt", dec=".", sep=",", append=T)
 
-#Site_2022 : Site_2023 significant#Site_2022 : Site_2023 significanttotal
 ## 4.3.2 submodels below-ground BM####
 #Torino
 mod.below.To <- lmer(log(DW_below_g+10)~  
                     RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Torino",] ) 
 
-anova.below.To <- anova(mod.below.To)
+anova.below.To <- anova(mod.below.To)[,1:6]
 
 name <- "below.BM.To" 
 write.table(name, "S_table.csv", append=T)
@@ -219,7 +206,7 @@ pairs(emmeans(mod.below.To, "Site_2022"), Letters=LETTERS)
 mod.below.Tu <- lmer(log(DW_below_g+10)~  
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Tübingen",] ) 
 
-anova.below.Tu <- anova(mod.below.Tu)
+anova.below.Tu <- anova(mod.below.Tu)[,1:6]
 
 name <- "below.BM.Tu" 
 write.table(name, "S_table.csv", append=T)
@@ -236,11 +223,9 @@ pairs(emmeans(mod.below.To, "Site_2022"))
 mod.below.Up <- lmer(log(DW_below_g+10)~  
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Uppsala",] ) 
 
-BM[BM$Site_2023=="Uppsala","site.block"]
-table(BM[BM$Site_2023=="Uppsala","site.block"])
-table(is.na(BM[BM$Site_2023=="Uppsala","DW_below_g"]), BM[BM$Site_2023=="Uppsala","site.block"])
 
-anova.below.Up <- anova(mod.below.Up)
+
+anova.below.Up <- anova(mod.below.Up)[,1:6]
 
 name <- "below.BM.Up" 
 write.table(name, "S_table.csv", append=T)
@@ -261,7 +246,7 @@ mod.total <- lmer(log(DW_total_g+50)~
 
 
 anova(mod.total)
-(R.total <- anova(mod.total))
+(R.total <- anova(mod.total)[,1:6])
 
 plot(mod.total)
 qqnorm(resid(mod.total))
@@ -280,7 +265,7 @@ mod.total.To <- lmer(log(DW_total_g+50)~
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Torino",] ) 
 
 
-anova.total.To <- anova(mod.total.To)
+anova.total.To <- anova(mod.total.To)[,1:6]
 
 name <- "total.BM.To" 
 write.table(name, "S_table.csv", append=T)
@@ -291,7 +276,7 @@ mod.total.Tu <- lmer(log(DW_total_g+50)~
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Tübingen",] ) 
 
 
-anova.total.Tu <- anova(mod.total.Tu)
+anova.total.Tu <- anova(mod.total.Tu)[,1:6]
 
 name <- "total.BM.Tu" 
 write.table(name, "S_table.csv", append=T)
@@ -301,7 +286,7 @@ write.table(anova.total.Tu, "S_table.csv", append=T)
 mod.total.Up <- lmer(log(DW_total_g+50)~  
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Uppsala",] ) 
 
-anova.total.Up <- anova(mod.total.Up)
+anova.total.Up <- anova(mod.total.Up)[,1:6]
 
 name <- "total.BM.Up" 
 write.table(name, "S_table.csv", append=T)
@@ -313,13 +298,9 @@ write.table(anova.total.Up, "S_table.csv", append=T)
 mod.prop <- lmer(asin(sqrt(prop.below))~  
                     RW.std + Lat_origin.std + Site_2022 + Site_2023+  RW.std:Site_2023 + Lat_origin.std:Site_2023 +Site_2022:Site_2023 + (1|site.block), data=BM ) 
 
-(R.prop <- anova(mod.prop))
+(R.prop <- anova(mod.prop)[,1:6])
 cld(emmeans(mod.prop, "Site_2023"))
 
-sin(0.875)^2
-sin(1.042)^2
-(0.7861073-0.589123)/0.7861073
-(0.7454854-0.589123)/0.7454854
 plot(mod.prop)
 qqnorm(resid(mod.prop))
 qqline(resid(mod.prop))
@@ -332,7 +313,7 @@ prop.below.To <- lmer(asin(sqrt(prop.below))~
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Torino",] ) 
 
 
-anova.prop.To <- anova(prop.below.To)
+anova.prop.To <- anova(prop.below.To)[,1:6]
 
 
 name <- "prop.To" 
@@ -351,7 +332,7 @@ prop.below.Tu <- lmer(asin(sqrt(prop.below))~
                        RW.std + Lat_origin.std + Site_2022 + (1|site.block), data=BM[BM$Site_2023=="Tübingen",] ) 
 
 
-anova.prop.Tu <- anova(prop.below.Tu)
+anova.prop.Tu <- anova(prop.below.Tu)[,1:6]
 
 name <- "prop.Tu" 
 write.table(name, "S_table.csv", append=T)
@@ -368,7 +349,7 @@ prop.below.Up <- lmer(asin(sqrt(prop.below))~
 
 
 
-anova.prop.Up <- anova(prop.below.Up)
+anova.prop.Up <- anova(prop.below.Up)[,1:6]
 
 name <- "prop.Up" 
 write.table(name, "S_table.csv", append=T)
@@ -384,12 +365,25 @@ cld(emmeans(mod.prop, "Site_2023"), Letters=LETTERS)
 pairs(emmeans(prop.below.Up, "Site_2022"), Letters=LETTERS)
 
 
-
-
-#
 # 5. Plots for effects from lmers ----------------------------------------- 
 ## 5.1 Site effects plot (initial plot for Fig. 3) ####
 
+# effects from lmers
+
+ef1 <- effect(c("Site_2022:Site_2023"), mod.above)
+
+x1 <- as.data.frame(ef1)
+
+ef2 <- effect("Site_2022:Site_2023 ", mod.below)
+x2 <- as.data.frame(ef2)
+
+ef3 <- effect("Site_2022:Site_2023 ", mod.total )
+x3 <- as.data.frame(ef3)
+
+ef4 <- effect("Site_2022:Site_2023", mod.prop)
+x4 <- as.data.frame(ef4)
+
+#plots
 p1 <- ggplot(x1, aes(x=Site_2023, y= exp(fit)-20 , fill=Site_2022)) + 
   geom_bar(position="dodge", width=0.7, alpha=1, stat="identity") + 
   scale_fill_manual(values = c("red", "purple", "blue"))+
